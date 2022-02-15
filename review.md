@@ -50,6 +50,16 @@ marker.addEventListener('click', () => {
 
 > The above assumes I have a variable `marker` that represents the marker I'm creating, and a variable `school` that represents the object with data that I'm creating the marker from.
 
+### Fetching from the local file system vs a web server...
+
+One thing to note is that the JavaScript `fetch` API does not work if what you're trying to fetch is not being accessed through an HTTP server. For example, if you copy the full path your HTML file, load your page from that file path, and then try to open one of the school info popups, you may end up with an error like this in your console:
+
+```
+Fetch API cannot load file:///.../week5/data/demographics/2390.json. URL scheme "file" is not supported.
+```
+
+Instead you will have to run a web server in your week5 repository (e.g., using `npx http-server --port 8000`) and access your page through that web server (e.g. http://localhost:8000/exercise/school-explorer-redux/index.html)
+
 ### A note about relative vs absolute paths...
 
 In the code above I specify the data URL as:
@@ -67,13 +77,3 @@ In other words, assuming our server is started from the base of this week's repo
 ```js
 const dataUrl = `/data/demographics/${school['ULCS Code']}.json`;
 ```
-
-### Fetching from the local file system vs a web server...
-
-One last thing to note is that the JavaScript `fetch` API does not work if what you're trying to fetch is not being accessed through an HTTP server. For example, if you copy the full path your HTML file and load your page from that file path, you may end up with an error like this in your console:
-
-```
-Fetch API cannot load file:///.../week5/data/demographics/2390.json. URL scheme "file" is not supported.
-```
-
-Instead you will have to run a web server in your week5 repository (e.g., using `npx http-server --port 8000`) and access your page through that web server (e.g. http://localhost:8000/exercise/school-explorer-redux/index.html)
