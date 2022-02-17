@@ -22,6 +22,110 @@ const zipCodeSelect = document.querySelector('#zip-code-select');
 ==================== */
 
 let showSchoolInfo = (school, marker) => {
-}
+  const dataFilename = `http://localhost:8000/data/demographics/${school['ULCS Code']}.json`
+  fetch(dataFilename)
+    .then(response => response.json())
+    .then(data => {
+      const first = data[0];
+      const grade = first['GradeLevel'];
+      const pctm = first['MalePCT'];
+      const pctf = first['FemalePCT'];
+
+      marker.bindPopup(`
+        <h3>${school['Publication Name']}</h3>
+        <ul>
+          <li>Grade: ${grade}</li>
+          <li>Percent Male: ${pctm}%</li>
+          <li>Percent Female: ${pctf}%</li>
+        </ul>`).openPopup();
+      
+        console.log(`${pctf}%`);
+    });
+
+  // marker.bindPopup(`<h3>${school['Publication Name']}</h3>`).openPopup();
+};
+
 
 /* PASTE YOUR WEEK4 EXERCISE CODE HERE */
+let updateSchoolMarkers = (schoolsToShow) => {
+  schoolLayer.clearLayers();
+
+  schoolsToShow.forEach((school) => {
+    const [lat, lng] = school['GPS Location'].split(',').map(l => l.trim());
+    const marker = L.marker([lat, lng]).bindTooltip(school['Publication Name']);
+    schoolLayer.addLayer(marker);
+
+    marker.addEventListener('click', () => {
+      // show a pop-up
+      showSchoolInfo(school, marker);
+      // console.log('clicked');
+
+    })
+  })
+  
+  
+};
+
+let updateSchoolList = (schoolsToShow) => {
+  schoolList.innerHTML = '';
+  let theSchoolList = [];
+  schoolsToShow.forEach((school) => {
+    const schoolName = school['Publication Name'];
+    theSchoolList = theSchoolList.concat(schoolName);
+  });
+  theSchoolList.forEach((school) => {
+    schoolList.appendChild(htmlToElement(`<li>${school}</li>`));
+  });
+};
+
+let initializeZipCodeChoices = () => {
+  let zipList = [];
+  schools.forEach((school) => {
+    const schoolZip = school['Zip Code'].substring(0, 5);
+    zipList = zipList.concat(schoolZip);
+  });
+  zipUnique = [...new Set(zipList)].sort();
+  zipUnique.forEach((zip) => {
+    zipCodeSelect.appendChild(htmlToElement(`<option>${zip}</option>`));
+  });
+};
+
+let filteredSchools = () => {
+  let gradeValue = gradeLevelSelect.value;
+  let zipValue = zipCodeSelect.value;
+  console.log(zipValue, gradeValue);
+  let schoolsToShow = schools.filter((school) =>
+    school[`${gradeValue}`] === '1'
+  ).filter((school) => 
+    school['Zip Code'].substring(0, 5) === zipValue
+  );
+  schoolsToShow.forEach((school) => {
+    console.log(school['School Name (ULCS)']);
+  });
+  updateSchoolList(schoolsToShow);
+  updateSchoolMarkers(schoolsToShow);
+};
+
+
+/*
+
+No need to edit anything below this line ... though feel free.
+
+*/
+
+// The handleSelectChange function is an event listener that will be used to
+// update the displayed schools when one of the select filters is changed.
+let handleSelectChange = () => {
+  const schoolsToShow = filteredSchools() || [];
+  //updateSchoolMarkers(schoolsToShow);
+  //updateSchoolList(schoolsToShow);
+};
+
+gradeLevelSelect.addEventListener('change', handleSelectChange);
+zipCodeSelect.addEventListener('change', handleSelectChange);
+
+// The code below will be run when this script first loads. Think of it as the
+// initialization step for the web page.
+initializeZipCodeChoices();
+//updateSchoolMarkers(schools);
+//updateSchoolList(schools);
